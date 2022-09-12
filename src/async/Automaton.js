@@ -1,6 +1,5 @@
 const EventEmitter = require('events')
 const Stage = require('./Stage')
-const localID = require('./local-id')
 
 class Automaton {
     constructor () {
@@ -49,13 +48,13 @@ class Automaton {
      * Trouve la première transition valide et passe au travers.
      * Ne fait rien si aucune transition n'est valide
      */
-    passthru () {
-        const oTransition = this._stages.getFirstTrueTransition()
+    async proceed () {
+        const oTransition = await this._stage.getFirstTrueTransition()
         if (oTransition) {
             const oOldStage = this._stage
             const oNewStage = oTransition.stage
-            this._stage = oTransition.stage
-            this._events.emit('transition.passthru', { from: oOldStage, stage: oNewStage, transition: oTransition })
+            this._stage = oNewStage
+            this._events.emit('stage', { from: oOldStage, to: oNewStage, transition: oTransition })
         }
     }
 }

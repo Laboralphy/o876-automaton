@@ -1,5 +1,5 @@
 const Transition = require('./Transition')
-const localID = require('./local-id')
+const localID = require('../common/local-id')
 
 class Stage {
     constructor (id) {
@@ -33,7 +33,9 @@ class Stage {
     addTransition (oStage, pTest) {
         const oTransition = new Transition(localID.getID())
         oTransition.stage = oStage
-        oTransition.events.on('test', pTest)
+        oTransition.events.on('test', oEvent => {
+            oEvent.result(pTest())
+        })
         this._transitions.push(oTransition)
     }
 }

@@ -1,18 +1,19 @@
 const EventEmitter = require('events')
+const localID = require('../common/local-id')
 
 class Transition {
     constructor (id) {
-        this._id = id
+        this._id = id || localID.getID()
         this._events = new EventEmitter()
         this._stage = null
     }
 
-    get events () {
-        return this._events
-    }
-
     get id () {
         return this._id
+    }
+
+    get events () {
+        return this._events
     }
 
     get stage () {
@@ -25,12 +26,18 @@ class Transition {
 
     /**
      * Renvoie la vérité de la transition
-     * @returns {boolean}
+     * @returns {boolean|Promise<boolean>}
      */
-    isTrue () {
-        const oEvent = { id: this._id, result: false }
+    isTrue (oContext = {}) {
+        let bResult = false
+        const oEvent = {
+            context: oContext,
+            result: b => {
+                bResult = b
+            }
+        }
         this._events.emit('test', oEvent)
-        return oEvent.result
+        return bResult
     }
 }
 
