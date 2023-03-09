@@ -70,10 +70,10 @@ describe('runLoop', function () {
     })
 })
 
-describe('parseArguments', function () {
+describe('parseScriptArguments', function () {
     it('should parse ["t1", 1000] when input is "t1 1000"', function () {
         const sc = new StateContext()
-        expect(sc.parseArguments('t1 1000')).toEqual(['t1', 1000])
+        expect(sc.parseScriptArguments('t1 1000')).toEqual({ opcode: 't1', parameters: '1000' })
     })
 })
 
@@ -82,14 +82,14 @@ describe('runJump', function () {
         it('should log "test t1 1000"', function() {
             const def = {
                 jump: [
-                    't1 1000 s1'
+                    { test: 't1 1000', state: 's1' }
                 ]
             }
             const sc = new StateContext(def)
             expect(sc._jump.length).toBeGreaterThan(0)
             const aLog = []
             sc.events.on('test', evt => {
-                aLog.push('test ' + evt.test + ' ' + evt.arguments.join(' '))
+                aLog.push('test ' + evt.test + ' ' + evt.parameters)
             })
             sc.runJump()
             expect(aLog).toEqual(['test t1 1000'])
@@ -97,7 +97,7 @@ describe('runJump', function () {
         it('should log "new state s1" when test is returning true', function() {
             const def = {
                 jump: [
-                    't1 1000 s1'
+                    { test: 't1 1000', state: 's1' }
                 ]
             }
             const sc = new StateContext(def)
@@ -115,7 +115,7 @@ describe('runJump', function () {
         it('should not log "new state s1" when test not passing true', function() {
             const def = {
                 jump: [
-                    't1 1000 s1'
+                    { test: 't1 1000', state: 's1' }
                 ]
             }
             const sc = new StateContext(def)

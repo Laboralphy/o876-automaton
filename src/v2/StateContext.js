@@ -35,52 +35,70 @@ class StateContext {
     }
 
     runJump () {
-        for (const sJump of this._jump) {
-            const aJump = sJump.split(' ')
-            const sState = aJump.pop()
-            const sCond = aJump.join(' ')
-            if (this.invokeTest(sCond)) {
-                this._events.emit('state', { state: sState, transitionType: 'jump' })
+        for (const { test, state } of this._jump) {
+            if (this.invokeTest(test)) {
+                this._events.emit('state', { state, transitionType: 'jump' })
                 break
             }
         }
     }
 
     runCall () {
-        for (const sCall of this._call) {
-            const aCall = sCall.split(' ')
-            const sState = aCall.pop()
-            const sCond = aCall.join(' ')
-            if (this.invokeTest(sCond)) {
-                this._events.emit('state', { state: sState, transitionType: 'call' })
+        for (const { test, state } of this._call) {
+            if (this.invokeTest(test)) {
+                this._events.emit('state', { state, transitionType: 'call' })
                 break
             }
         }
     }
 
     runBack () {
-        for (const sBack of this._back) {
-            if (this.invokeTest(sBack)) {
+        for (const { test } of this._back) {
+            if (this.invokeTest(test)) {
                 this._events.emit('back', {})
                 break
             }
         }
     }
 
-    parseArguments (aArgs) {
-        return aArgs.split(' ').filter(s => s !== '').map(s => isNaN(s) ? s : parseFloat(s))
+    parseScriptArguments (sInput) {
+        const r = sInput.match(/^\s*(\S+)\s*(.*)$/)
+        if (r) {
+            const eventObject = {
+                opcode: r[1],
+                input: r[2],
+                output: r[2]
+            }
+            this._events.emit('parse', eventObject)
+            return {
+                opcode: eventObject.opcode,
+                parameters: eventObject.output
+            }
+        } else {
+            throw new Error('Parse Error: could not parse input string')
+        }
     }
 
     invokeAction (action) {
-        const aAction = this.parseArguments(action)
-        const sAction = aAction.shift()
-        this._events.emit('action', { action: sAction, arguments: aAction, data: this._data })
+        const { opcode, parameters } = this.parseScriptArguments(action)
+        this._events.emit('action', {
+            action: opcode,
+            parameters,
+            data: this._data
+        })
     }
 
     invokeTest (test) {
-        const aTest = this.parseArguments(test)
-        const sTest = aTest.shift()
-        const eventObject = { test: sTest, arguments: aTest, data: this._data, _result: false, pass(v = true) { this._result = Boolean(v) } }
+        const { opcode, parameters } = this.parseScriptArguments(test)
+        const eventObject = {
+            test: opcode,
+            parameters,
+            data: this._data,
+            _result: false,
+            pass(v = true) {
+                this._result = Boolean(v)
+            }
+        }
         this._events.emit('test', eventObject)
         return eventObject._result
     }

@@ -30,7 +30,7 @@ class Automaton {
             this._events.emit('test', {
                 state: sName,
                 test: eventObject.test,
-                arguments: eventObject.arguments,
+                parameters: eventObject.parameters,
                 data: eventObject.data,
                 pass(v = true) {
                     eventObject.pass(v)
@@ -43,6 +43,19 @@ class Automaton {
         })
         oState.events.on('back', () => {
             this.changeState(this._stack.pop(), 'back')
+        })
+        oState.events.on('parse', eventObject => {
+            eventObject.output = eventObject
+                .input
+                .split(' ')
+                .filter(s => s !== '')
+                /**
+                 * @param s {string}
+                 */
+                .map(s => {
+                    const f = parseFloat(s)
+                    return isNaN(f) ? s : f
+                })
         })
         return oState
     }
