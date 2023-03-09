@@ -47,6 +47,12 @@ class Automaton {
         return oState
     }
 
+    defineStates (oStates) {
+        for (const [sState, oState] of Object.entries(sState, oState)) {
+            this.defineState(sState, oState)
+        }
+    }
+
     /**
      *
      * @returns {StateContext}
