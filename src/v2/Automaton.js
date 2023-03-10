@@ -1,5 +1,6 @@
 const Events = require('events')
 const StateContext = require('./StateContext')
+const schemaRepository = require('./schema-repository')
 
 class Automaton {
     constructor() {
@@ -9,11 +10,25 @@ class Automaton {
         this._events = new Events()
     }
 
+    checkInput (oDefinition) {
+        schemaRepository.validate(oDefinition, '/state')
+        return true
+    }
+
+    get state () {
+        return this._currentState
+    }
+
+    set state (value) {
+        return this.changeState(value, 'jump')
+    }
+
     get events () {
         return this._events
     }
 
     defineState (sName, oStateDef) {
+        this.checkInput(oStateDef)
         const oState = new StateContext(oStateDef)
         this._states[sName] = oState
         this._stack = []
