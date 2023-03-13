@@ -69,6 +69,7 @@ describe('subroutine', function () {
         a.process()
         a.process()
         expect(aLog).toEqual([
+                'action s1 i1',
                 'action s1 a1',
                 'test flagEqu 1 vs 0false',
                 'action s1 a1',
@@ -88,3 +89,14 @@ describe('subroutine', function () {
         )
     })
 })
+
+describe('defineStates', function () {
+    it ('should not do anything when defineng empty states', function () {
+        const a = new Automaton()
+        a.defineStates({
+            s0: {}
+        })
+        a.process()
+        expect(a.state).toBe('s0')
+    })
+});
